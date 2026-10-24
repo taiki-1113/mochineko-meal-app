@@ -17,6 +17,7 @@
   let selectedMeal = detectMeal();
   let selectedChildId = data.children[0]?.id || null;
   let activeSession = null;
+  let pendingStart = false;
   let speech = null;
   let toastTimer = null;
   let tickTimer = null;
@@ -181,7 +182,7 @@
   }
   function openMeal() {
     const child = data.children.find(c => c.id === selectedChildId);
-    if (!child) { showToast('設定からニックネームを登録してね'); openSettings(); return; }
+    if (!child) { pendingStart = true; openSettings(); showToast('ニックネームを登録すると食事を始めます'); return; }
     activeSession = { childId: child.id, meal: selectedMeal, duration: selectedDuration(), startedAt: Date.now() };
     sessionStartedAt = activeSession.startedAt; lastStage = -1; lastLineIndex = -1; lastTapAt = 0;
     try { localStorage.setItem('mochineko.session', JSON.stringify(activeSession)); } catch {}
@@ -228,7 +229,8 @@
     e.preventDefault(); const field = $('child-name'); const name = field.value.trim();
     if (!name) { field.focus(); return; }
     if (data.children.length >= 3) return;
-    const child = { id: uid(), name }; data.children.push(child); selectedChildId = child.id; field.value = ''; persist(); renderSettings(); renderHome(); field.focus();
+    const child = { id: uid(), name }; data.children.push(child); selectedChildId = child.id; field.value = ''; persist(); renderSettings(); renderHome();
+    if (pendingStart) { pendingStart = false; closeSettings(); openMeal(); } else field.focus();
   });
   $('reset-button').addEventListener('click', () => {
     if (!window.confirm('子どもの登録と食事時間の設定をすべて削除します。よろしいですか？')) return;
