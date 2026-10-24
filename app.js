@@ -99,8 +99,8 @@
     });
     $('meal-icon').textContent = mealTypes[selectedMeal].icon;
     $('meal-label').textContent = mealTypes[selectedMeal].label;
-    $('start-hint').textContent = data.children.length ? `めやす ${selectedDuration()}分 · 準備ができたら、はじめよう` : '設定からニックネームを登録してね';
-    $('start-button').disabled = !data.children.length;
+    $('start-hint').textContent = data.children.length ? `めやす ${selectedDuration()}分 · 準備ができたら、はじめよう` : '「いただきます」を押すと、ニックネームの設定へ進みます';
+    $('start-button').disabled = false;
   }
   function renderSettings() {
     $('settings-children').innerHTML = data.children.length ? data.children.map(child => `<div class="setting-child-row"><span class="setting-child-name">🐾 ${escapeHtml(child.name)}</span><button data-remove-child="${escapeAttr(child.id)}" aria-label="${escapeAttr(child.name)}を削除">×</button></div>`).join('') : '<div class="no-children">まだ登録されていません</div>';
