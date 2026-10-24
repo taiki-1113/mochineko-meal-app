@@ -1,5 +1,5 @@
-const CACHE_NAME = 'mochineko-shell-v4';
-const APP_SHELL = ['./', './index.html', './styles.css', './app.js?v=4', './manifest.webmanifest', './icons/icon.svg'];
+const CACHE_NAME = 'mochineko-shell-v5';
+const APP_SHELL = ['./', './index.html', './styles.css', './app.js?v=5', './manifest.webmanifest', './icons/icon.svg', './assets/character/before.jpg', './assets/character/during.jpg', './assets/character/after.jpg', './assets/character/sleeping.jpg'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));

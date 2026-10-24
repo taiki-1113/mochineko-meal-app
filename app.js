@@ -55,40 +55,16 @@
   }
   function selectedDuration() { return Number(data.durations[selectedMeal]) || 30; }
 
-  function catSvg(stage = 1) {
-    // Original vector illustration follows the adopted 3D character sheet: white base, warm brown patches and half-lidded face.
-    if (stage >= 3) return `<svg class="cat-svg sleeping" viewBox="0 0 320 280" role="img" aria-label="眠っているもちねこ">
-      <ellipse class="fur" cx="160" cy="220" rx="133" ry="39"/><path class="patch" d="M225 186c22-9 41 0 51 19-19 11-39 10-60 2z"/>
-      <ellipse class="fur" cx="157" cy="201" rx="79" ry="47"/><path class="fur" d="M100 204c-11-43 6-86 55-91 48-5 72 29 68 75-4 39-31 57-66 57-29 0-49-12-57-41Z"/>
-      <path class="patch" d="M111 153c-5-24 1-47 19-59l15 24 10-30c25-4 47 6 57 24-11 7-20 14-28 25-24-11-47-5-73 16Z"/><path class="inner-ear" d="m131 109 3-17 10 16m43 0 10-16 5 22"/>
-      <path class="eye-line" d="M126 173q12 9 24 0m29 0q12 9 24 0"/><path class="nose" d="m158 183 7 0-3.5 5z"/><path class="mouth" d="M162 188q-5 8-11 3m11-3q5 8 11 3"/><ellipse class="blush" cx="124" cy="187" rx="10" ry="5"/><ellipse class="blush" cx="204" cy="187" rx="10" ry="5"/>
-      <path class="fur" d="M101 228q-19 9-16 23 15 11 32-2m106-21q19 8 16 23-15 12-31-1"/><text x="243" y="96" font-size="25" fill="#bd8a5e">z</text><text x="263" y="75" font-size="18" fill="#bd8a5e">z</text>
-    </svg>`;
-
-    const progress = Math.max(0, Math.min(1, stage / 2));
-    const rx = 78 + progress * 43;
-    const bodyY = 227 - progress * 20;
-    const bodyRy = 52 + progress * 26;
-    const headRy = 70 + progress * 5;
-    const headCy = 112 + progress * 14;
-    const pawY = bodyY + bodyRy - 8;
-    const cheeks = progress > .48 ? `<ellipse class="fur" cx="106" cy="158" rx="25" ry="22"/><ellipse class="fur" cx="214" cy="158" rx="25" ry="22"/>` : '';
-    return `<svg class="cat-svg" viewBox="0 0 320 320" role="img" aria-label="もちねこ">
-      <path class="fur" d="M81 238c-25 6-40-9-30-25 9-15 23-12 35-2"/><ellipse class="fur" cx="160" cy="${bodyY}" rx="${rx}" ry="${bodyRy}"/>
-      <path class="fur" d="M91 ${headCy-28} 91 ${headCy-59}q1-13 14-5l23 24m70 0 23-24q13-8 14 5l1 31q-4 57-71 61-68-4-74-61Z"/>
-      <path class="inner-ear" d="m101 ${headCy-59} 3 18 16-5m99 5 16 5 3-18"/>
-      <path class="patch" d="M98 ${headCy-43}q11-23 35-28l14 20 11-22q35 1 52 22-7 8-13 21-30-12-49 2-24-13-50 7Z"/>
-      ${cheeks}
-      <path class="line" d="M116 ${headCy+3}q14-12 28-1m32 0q14-11 28 1"/><path class="eye" d="M116 ${headCy+1}q13-12 27-1l1 5q-14 7-28-1zM176 ${headCy}q14-11 28 1l-1 4q-13 7-27-1z"/>
-      <ellipse class="blush" cx="113" cy="${headCy+22}" rx="12" ry="6"/><ellipse class="blush" cx="207" cy="${headCy+22}" rx="12" ry="6"/>
-      <path class="nose" d="m157 ${headCy+16} 7 0-3.5 5z"/><path class="mouth" d="M160 ${headCy+21}q-5 8-12 3m12-3q5 8 12 3"/>
-      <path class="line whisker" d="m104 ${headCy+16}-22-5m23 13-20 3m131-11 22-5m-23 13 20 3"/>
-      <ellipse class="fur" cx="129" cy="${pawY}" rx="22" ry="12"/><ellipse class="fur" cx="191" cy="${pawY}" rx="22" ry="12"/>
-    </svg>`;
+  function characterArt(stage = 0) {
+    const stages = ['before', 'during', 'after', 'sleeping'];
+    const labels = ['食事前のもちねこ', '食事中のもちねこ', '食後の大きなもちねこ', '眠っているもちねこ'];
+    const index = Math.max(0, Math.min(stages.length - 1, stage));
+    const name = stages[index];
+    return `<img class="character-art ${name}" src="./assets/character/${name}.jpg" alt="${labels[index]}" draggable="false">`;
   }
 
   function renderHome() {
-    $('home-cat').innerHTML = catSvg(0);
+    $('home-cat').innerHTML = characterArt(0);
     $('child-picker').innerHTML = data.children.length ? data.children.map(child => `<button class="child-chip ${child.id === selectedChildId ? 'selected' : ''}" data-child="${escapeAttr(child.id)}" aria-pressed="${child.id === selectedChildId}"><span class="chip-face">${child.id === selectedChildId ? '🐾' : '♡'}</span>${escapeHtml(child.name)}</button>`).join('') : '<div class="empty-children">まずは設定からニックネームを登録してね。</div>';
     document.querySelectorAll('.child-chip').forEach(button => button.addEventListener('click', () => {
       selectedChildId = button.dataset.child; renderHome();
@@ -138,7 +114,7 @@
     const stage = getStage(elapsed, activeSession.duration);
     if (stage !== lastStage) {
       lastStage = stage;
-      $('meal-cat').innerHTML = catSvg(stage);
+      $('meal-cat').innerHTML = characterArt(stage);
       $('meal-cat').classList.add('growth-pop'); setTimeout(() => $('meal-cat').classList.remove('growth-pop'), 700);
       $('stage-pill').textContent = stageLabel(stage); $('meal-message').textContent = stageMessage(stage);
       if (stage === 3) stopVoiceLoop();
@@ -201,7 +177,7 @@
     if (!activeSession) return;
     stopVoiceLoop(); clearInterval(tickTimer); stopSpeech(); releaseWakeLock();
     $('confirm-modal').classList.add('hidden'); $('meal-title').textContent = 'ごちそうさま'; $('stage-pill').textContent = 'きょうも、よくがんばったね'; $('meal-message').textContent = 'もちねこと、ゆっくりひとやすみ。';
-    $('meal-cat').innerHTML = catSvg(3); $('meal-cat').classList.remove('reacting');
+    $('meal-cat').innerHTML = characterArt(3); $('meal-cat').classList.remove('reacting');
     const goHome = () => {
       if (!activeSession) return;
       activeSession = null;
