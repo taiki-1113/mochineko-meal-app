@@ -24,9 +24,10 @@ jobs:
         uses: actions/configure-pages@v5
       - name: Prepare site files
         run: |
-          mkdir -p _site/icons
+          mkdir -p _site/icons _site/assets/character
           cp index.html styles.css app.js manifest.webmanifest sw.js _site/
           cp icons/icon.svg _site/icons/
+          cp assets/character/*.jpg _site/assets/character/
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
