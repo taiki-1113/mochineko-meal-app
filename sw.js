@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mochineko-shell-v2';
+const CACHE_NAME = 'mochineko-shell-v3';
 const APP_SHELL = ['./', './index.html', './styles.css', './app.js', './manifest.webmanifest', './icons/icon.svg'];
 
 self.addEventListener('install', event => {
@@ -6,7 +6,10 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('mochineko-shell-') && key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim()));
+  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('mochineko-shell-') && key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim()).then(async () => {
+    const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    await Promise.all(clients.map(client => client.navigate(client.url)));
+  }));
 });
 
 self.addEventListener('fetch', event => {
