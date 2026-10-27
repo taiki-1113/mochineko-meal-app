@@ -67,7 +67,7 @@ const sleepCheck = ms => new Promise(r=>setTimeout(r,ms));
     const s=await saved(page);const at=s.startedAt+s.duration*60000*(stage-1)/8;
     const gap=at-await page.evaluate(()=>Date.now());
     if(gap>0)await page.clock.fastForward(gap+400);
-    if(gap>0)assert.match(await page.locator('#cat-visual image').last().getAttribute('href'),new RegExp(`stage-0${stage}\\.png$`));
+    if(gap>0)assert.equal(await page.locator('#meal-screen').getAttribute('data-stage'),String(stage));
   }
   const s=await saved(page);const sleepAt=s.startedAt+s.duration*60000+180000;
   await page.clock.fastForward(sleepAt-await page.evaluate(()=>Date.now())+500);
@@ -114,15 +114,14 @@ const sleepCheck = ms => new Promise(r=>setTimeout(r,ms));
   for(let stage=1;stage<=9;stage++){
     if(stage>1)await bp.clock.fastForward(bs.startedAt+600000*(stage-1)/8-await bp.evaluate(()=>Date.now())+400);
     await bp.clock.runFor(750);
-    assert.match(await bp.locator('#cat-visual image').last().getAttribute('href'),new RegExp(`stage-0${stage}\\.png$`));
+    assert.equal(await bp.locator('#meal-screen').getAttribute('data-stage'),String(stage));
   }
   // Force the next normal message to be named through persisted production state.
   await bp.evaluate(()=>{const s=JSON.parse(localStorage.getItem('mochineko.session'));s.messageCount=3;localStorage.setItem('mochineko.session',JSON.stringify(s));});
   await bp.reload();await bp.clock.fastForward(121000);await bp.clock.runFor(500);
   const bubbleBox=await bp.locator('#speech-bubble').boundingBox(),catBox=await bp.locator('#meal-cat').boundingBox();
   await bp.screenshot({path:path.join(output,'small-screen.png'),animations:'disabled'});
-  if(!bubbleBox||!catBox||bubbleBox.y+bubbleBox.height>catBox.y+6) console.log('Small-screen layout',JSON.stringify({bubbleBox,catBox,session:await saved(bp),text:await bp.locator('#bubble-text').innerText()}));
-  assert.ok(bubbleBox&&catBox&&bubbleBox.y+bubbleBox.height<=catBox.y+6,'long name bubble leaves room for the character');
+  assert.ok(bubbleBox&&catBox&&bubbleBox.y+bubbleBox.height<=catBox.y+catBox.height*.4,'long name bubble leaves the face visible');
   await boundaries.close();
 
   // Real AudioContext timing is not controlled by Playwright's virtual clock.
@@ -154,10 +153,11 @@ const sleepCheck = ms => new Promise(r=>setTimeout(r,ms));
   await offline.setOffline(true);await off.reload();
   await off.locator('#home-cat image').waitFor();
   const result=await off.evaluate(async()=>{
-    const keys=await caches.keys();const cache=await caches.open('mochineko-shell-v8');const requests=await cache.keys();
-    return {keys,audio:requests.filter(r=>r.url.endsWith('.wav')).length,images:requests.filter(r=>/stage-\d+\.png$/.test(r.url)).length,status:(await fetch('./assets/audio/happy-1.wav')).status,manifest:(await fetch('./assets/character/manifest.json')).status};
+    const keys=await caches.keys();const cache=await caches.open('mochineko-shell-v9');const requests=await cache.keys();
+    return {keys,audio:requests.filter(r=>r.url.endsWith('.wav')).length,images:requests.filter(r=>/stage-\d+\.png$/.test(r.url)).length,status:(await fetch('./assets/audio/happy-1.wav')).status,manifest:(await fetch('./assets/character/manifest.json')).status,dining:await Promise.all(['./assets/background/dining-room.png','./assets/dining/manifest.json','./assets/dining/early.png','./assets/dining/middle.png','./assets/dining/late.png','./assets/dining/plates.png'].map(async url=>(await fetch(url)).status))};
   });
   assert.equal(result.audio,13);assert.equal(result.images,10);assert.equal(result.status,200);assert.equal(result.manifest,200);
+  assert.deepEqual(result.dining,[200,200,200,200,200,200],'all dining assets work offline');
   await off.locator('#start-button').click();await off.locator('#child-name').fill('ゆい');await off.locator('#child-submit').click();assert.equal(await off.locator('#meal-screen').isVisible(),true,'offline start works');
   await offline.close();await browser.close();server?.close();
   console.log(JSON.stringify({status:'PASS',normalLines:lines,offline:result,screenshots:output},null,2));

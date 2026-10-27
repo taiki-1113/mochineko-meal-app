@@ -30,6 +30,7 @@
   let assets = {}, lastStage = -1, lastMilestone = 0, sleeping = false;
   let lastElapsed = 0, lastMono = 0, offlineReady = false;
   let bubbleLayoutFrame = 0;
+  let diningAssets = null, diningPose = 2, diningStage = -1, diningClock = 0, lastDiningAt = 0, growthHintUntil = 0, artSerial = 0;
   const uid = () => globalThis.crypto?.randomUUID?.() || `child-${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function detectMeal() { const h = new Date().getHours(); return h >= 5 && h < 11 ? 'breakfast' : h >= 11 && h < 17 ? 'lunch' : 'dinner'; }
@@ -40,7 +41,13 @@
   function persist() { data.selectedChildId = selectedChildId; write(STORAGE_KEY, data); }
   function saveSession() { if (session) write(SESSION_KEY, session); }
   function showToast(text) { $('toast').textContent = text; $('toast').classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => $('toast').classList.remove('show'), 3000); }
-  function art(stage) {
+  function art(stage, pose = null) {
+    const dining = pose !== null && diningAssets?.stages[String(stage)];
+    if (dining) {
+      const [x,y,w,h] = dining.frames[pose].box;
+      const clip=`dining-clip-${++artSerial}`;
+      return `<svg class="character-svg dining-sheet" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><defs><clipPath id="${clip}"><rect width="${w}" height="${h}"/></clipPath></defs><g clip-path="url(#${clip})"><image href="${dining.file}" x="${-x}" y="${-y}" width="${dining.width}" height="${dining.height}"/></g></svg>`;
+    }
     const key = String(stage).padStart(2,'0'), a = assets[key];
     const path = `./assets/character/stage-${key}.png`;
     if (!a) return `<svg class="character-svg" viewBox="0 0 1254 1254" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><image href="${path}" width="1254" height="1254"/></svg>`;
@@ -58,7 +65,10 @@
     // Face positions are expressed in each original image's coordinates.
     const faceFractions = [[.512,.303],[.53,.34],[.54,.36],[.53,.39],[.54,.40],[.54,.40],[.54,.40],[.54,.40],[.54,.41],[.34,.56]];
     const [fx,fy] = faceFractions[lastStage-1] || [.53,.38];
-    const face = new DOMPoint(a.width*fx,a.height*fy).matrixTransform(svg.getScreenCTM());
+    const box = svg.viewBox.baseVal;
+    const face = svg.classList.contains('dining-sheet')
+      ? new DOMPoint(box.width*.51,box.height*.43).matrixTransform(svg.getScreenCTM())
+      : new DOMPoint(a.width*fx,a.height*fy).matrixTransform(svg.getScreenCTM());
     const x = face.x-rect.left, y = face.y-rect.top, w = rect.width, h = rect.height;
     const clamp = (n,min,max) => Math.max(min,Math.min(max,n));
     const bottom = y >= h+8;
@@ -74,15 +84,39 @@
     tail.querySelector('path').setAttribute('d',d);
     tail.dataset.root = `${rootX},${rootY}`; tail.dataset.tip = `${tipX},${tipY}`; tail.dataset.target = `${x},${y}`;
   }
-  function setStage(stage, animate = true) {
-    if (stage === lastStage) return;
+  function setStage(stage, animate = true, pose = diningPose) {
+    const poseKey = stage === 10 ? 2 : pose;
+    if (stage === lastStage && poseKey === diningPose && diningStage === stage) return;
+    const changedBody = stage !== lastStage;
     const visual = $('cat-visual');
     const old = [...visual.children];
-    const layer = document.createElement('span'); layer.className = 'stage-layer'; layer.innerHTML = art(stage); visual.append(layer);
-    for (const el of old) { el.classList.add('leaving'); setTimeout(() => el.remove(), animate ? 700 : 0); }
-    lastStage = stage;
+    const layer = document.createElement('span'); layer.className = `stage-layer${changedBody?' body-transition':''}`; layer.innerHTML = art(stage,poseKey); visual.append(layer);
+    for (const el of old) { el.classList.add('leaving'); setTimeout(() => el.remove(), animate ? (changedBody ? 650 : 180) : 0); }
+    lastStage = stage; diningStage = stage; diningPose = poseKey;
+    $('meal-screen').dataset.stage = String(stage);
+    $('meal-screen').dataset.pose = ['bite','chew','rest'][poseKey];
     queueBubbleLayout();
     $('meal-cat').setAttribute('aria-label', stage === 10 ? 'ねている もちねこを なでる' : 'もちねこを なでる');
+  }
+  function updateDining(secs, paused) {
+    const now = performance.now();
+    const satisfied = secs >= session.duration*60;
+    if (!paused && !satisfied) diningClock += Math.max(0,now-lastDiningAt)/1000;
+    lastDiningAt = now;
+    const cycle = diningClock % 23, bite = cycle % 5;
+    const action = sleeping ? 'sleep' : paused ? 'pause' : satisfied ? 'satisfied' : cycle >= 15 ? 'rest' : bite < 1.4 ? 'bite' : bite < 4.3 ? 'chew' : 'swallow';
+    const pose = action === 'bite' ? 0 : action === 'chew' ? 1 : 2;
+    setStage(lastStage,false,pose);
+    const screen=$('meal-screen'); screen.dataset.action=action;
+    const progress=Math.min(1,secs/(session.duration*60));
+    const food=progress<.38?0:progress<.8?1:2;
+    if(diningAssets && $('meal-plate').dataset.food!==String(food)){
+      const [x,y,w,h]=diningAssets.plates[food], [sw,sh]=diningAssets.plateSize;
+      $('meal-plate').innerHTML=`<svg viewBox="0 0 ${w} ${h}" aria-hidden="true"><defs><clipPath id="plate-clip"><rect width="${w}" height="${h}"/></clipPath></defs><g clip-path="url(#plate-clip)"><image href="./assets/dining/plates.png" x="${-x}" y="${-y}" width="${sw}" height="${sh}"/></g></svg>`;
+      $('meal-plate').dataset.food=String(food);
+    }
+    $('meal-action-label').textContent = sleeping ? 'おなか いっぱい。すやすや…' : cue ? '' : Date.now()<growthHintUntil ? 'たべて おなかが まあるくなったにゃ' : ({bite:'いっしょに ひとくちにゃ',chew:'もぐもぐ、よく かんで',swallow:'ごっくん。おいしいにゃ',rest:'のんびり ひとやすみにゃ',satisfied:'おなか まんぞくにゃ',pause:''}[action]);
+    if(!paused) session.diningClock=diningClock;
   }
   function renderHome() {
     $('home-cat').innerHTML = art(5);
@@ -148,8 +182,8 @@
     $('bubble-text').textContent = text;
     $('speech-bubble').classList.remove('hidden');
     queueBubbleLayout();
-    $('meal-screen').classList.toggle('saluting', kind === 'opening' || kind === 'ending');
     $('meal-screen').classList.remove('eating');
+    updateDining(elapsed(),true);
     if (play) {
       $('meal-screen').classList.add('meowing');
       audio.play(group).finally(() => {
@@ -172,12 +206,13 @@
     const stage = sleeping ? 10 : Math.min(9,1+Math.floor(Math.min(secs/target,1)*8));
     setStage(stage);
     const milestone = Math.min(4,Math.floor(secs/target*4));
-    if (!sleeping && lastMilestone >= 0 && milestone > lastMilestone) animate('growth-pop',750);
+    if (!sleeping && lastMilestone >= 0 && milestone > lastMilestone) { animate('growth-pop',750); growthHintUntil=Date.now()+8000; }
     lastMilestone = milestone;
     const screen = $('meal-screen'); screen.classList.toggle('sleeping',sleeping);
     $('sleep-mark').classList.toggle('hidden',!sleeping);
     const eating = !sleeping && !cue && session.phase === 'active' && Math.floor(secs % 23) < 15;
     screen.classList.toggle('eating',eating);
+    updateDining(secs, sleeping || !!cue || session.phase !== 'active' || document.hidden || !$('confirm-modal').classList.contains('hidden'));
     if (cue) finishCue(cue.token);
     if (!session || session.phase !== 'active' || sleeping || cue || document.hidden || !$('confirm-modal').classList.contains('hidden')) return;
     if (Date.now() >= session.nextMessageAt) {
@@ -191,6 +226,7 @@
     $('home-screen').classList.add('hidden'); $('meal-screen').className = `screen meal-screen ${meals[session.meal].theme}`;
     $('meal-label').textContent = meals[session.meal].label; $('meal-icon').textContent = meals[session.meal].icon;
     $('finish-button').disabled = false; lastStage = -1; sleeping = false; lastMilestone = -1;
+    diningStage=-1; diningPose=2; diningClock=Number.isFinite(session.diningClock)?session.diningClock:0; lastDiningAt=performance.now(); growthHintUntil=0;
     $('cat-visual').replaceChildren(); lastElapsed = Math.max(0,(Date.now()-session.startedAt)/1000); lastMono = performance.now();
     clearInterval(tickTimer); tickTimer = setInterval(tick,250); tick(); requestWakeLock();
   }
@@ -214,6 +250,7 @@
   function askFinish() {
     if (!session || session.phase === 'ending') return;
     showModal('confirm-modal');
+    updateDining(elapsed(),true);
   }
   function continueMeal() { hideModal('confirm-modal'); tick(); }
   function finishMeal() {
@@ -252,6 +289,7 @@
     if (!session) return;
     requestWakeLock();
     if (document.hidden) return;
+    lastDiningAt=performance.now();
     // Missed messages are discarded; restoring never bursts queued meows.
     if (session.nextMessageAt<Date.now()) scheduleMessage();
     tick(); if (sleeping && audio.ready && data.soundEnabled) audio.play('relaxed',{sleep:true});
@@ -289,7 +327,7 @@
     if(e.key==='Escape'){modal.id==='confirm-modal'?continueMeal():closeSettings();return;}
     if(e.key==='Tab'){const els=[...modal.querySelectorAll('button,input,select,[tabindex="0"]')].filter(el=>!el.disabled&&el.getClientRects().length);const first=els[0],last=els.at(-1);if(e.shiftKey&&(document.activeElement===first||document.activeElement===modal.querySelector('[role=dialog]'))){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}
   });
-  document.addEventListener('visibilitychange',()=>{if(document.hidden){audio.stop();releaseWakeLock();}else recover();});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden){audio.stop();releaseWakeLock();if(session)updateDining(elapsed(),true);}else recover();});
   window.addEventListener('pagehide',()=>{audio.stop();releaseWakeLock();clearInterval(tickTimer);});
   window.addEventListener('pageshow',()=>{if(session){clearInterval(tickTimer);tickTimer=setInterval(tick,250);recover();}});
   audio.setEnabled(data.soundEnabled);renderHome();
@@ -300,6 +338,10 @@
   }
   document.fonts?.ready.then(queueBubbleLayout);
   fetch('./assets/character/manifest.json').then(r=>{if(!r.ok)throw Error();return r.json();}).then(value=>{assets=value;renderHome();if(session){const stage=lastStage;lastStage=-1;setStage(stage,false);}}).catch(()=>{});
+  fetch('./assets/dining/manifest.json').then(r=>{if(!r.ok)throw Error();return r.json();}).then(value=>{
+    diningAssets=value;
+    if(session){const stage=lastStage;diningStage=-1;setStage(stage,false);updateDining(elapsed(),true);}
+  }).catch(()=>{});
   restoreSession();
   if(storageFailed)showToast('このたんまつでは せっていを ほぞんできません');
   if('serviceWorker' in navigator&&location.protocol.startsWith('http')){

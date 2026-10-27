@@ -66,3 +66,32 @@
 @media(max-width:340px){#finish-button{grid-template-columns:34px minmax(0,1fr) 14px;gap:4px;font-size:22px;letter-spacing:.015em;padding-left:11px;padding-right:11px}#finish-button .cat-face .icon{width:34px;height:34px}.speech-bubble{width:88%;padding-left:17px;padding-right:17px}.speech-bubble p{font-size:18px;letter-spacing:.02em}.finish-rays{width:20px}.rays-left{left:calc(11% - 24px)}.rays-right{right:calc(11% - 24px)}}
 @media(orientation:landscape) and (max-height:600px){.bubble-area{min-height:110px;padding-left:57%;padding-top:8px}.speech-bubble{width:100%;padding:16px 16px 19px}.speech-bubble p{font-size:17px}.bubble-cat{display:inline-block}.meal-actions{--finish-top:15px;--finish-height:64px;padding:var(--finish-top) 24px 20px}#finish-button{font-size:23px}.rays-left{left:0}.rays-right{right:0}}
 @media(orientation:landscape) and (max-height:600px){body{padding:0}.app-shell{width:min(100%,900px)}.meal-screen{height:100svh;min-height:390px}.meal-actions{width:45%;padding-left:20px;padding-right:20px}#finish-button{font-size:23px}.rays-left{left:0}.rays-right{right:0}}
+/* One dining scene: room, chair, character baseline and plate share screen coordinates. */
+.meal-screen:before{background-image:url('./assets/background/dining-room.png');background-size:100% 100%;background-position:center;filter:none}
+.meal-scene{display:block;height:100%}
+.meal-topbar{position:absolute;left:0;top:0;width:100%;padding:20px 6% 0}
+.meal-badge{font-size:17px;padding:8px 15px;gap:8px}.meal-badge>span:first-child{font-size:29px}
+.bubble-area,.meal-screen.sleeping .bubble-area{position:absolute;top:11%;left:0;width:100%;height:auto;min-height:0;padding:0 5%;pointer-events:none}
+.speech-bubble{width:76%;max-width:340px;padding:17px 19px 20px}.speech-bubble p{font-size:clamp(17px,4.7vw,22px);line-height:1.7}
+.meal-cat,.meal-screen.sleeping .meal-cat{position:absolute;left:4%;top:28%;bottom:31%;height:auto;min-height:0;width:92%;margin:0;filter:drop-shadow(0 3px 2px #78522816);z-index:2}
+.cat-motion{animation:none!important;transform-origin:50% 98%}
+.dining-sheet{overflow:hidden}.stage-layer{transition:opacity .18s ease}.stage-layer.body-transition{transition:opacity .65s ease}
+.table-contact-shadow{position:absolute;top:68%;left:20%;width:60%;height:2%;background:radial-gradient(ellipse,#79533240,transparent 70%);filter:blur(3px);pointer-events:none;z-index:1}
+.meal-plate{position:absolute;left:25%;top:70%;width:50%;height:12%;z-index:3;pointer-events:none;filter:drop-shadow(0 3px 2px #79533222)}
+.meal-plate svg{display:block;width:100%;height:100%;overflow:hidden}
+.meal-action-label{position:absolute;top:82%;left:4%;width:92%;margin:0;text-align:center;font-size:clamp(15px,4vw,18px);line-height:1.5;color:#81542e;text-shadow:0 1px 3px #fff6de;pointer-events:none}
+.meal-actions{position:absolute;left:0;right:0;bottom:0;width:100%;padding:12px 12% max(22px,calc(env(safe-area-inset-bottom) + 12px));--finish-top:12px;--finish-height:68px}
+#finish-button{font-size:clamp(23px,5vw,28px);min-height:var(--finish-height)}
+.rays-left{left:calc(12% - 27px)}.rays-right{right:calc(12% - 27px)}
+.meal-screen[data-action=chew] .cat-motion{animation:dining-chew 1s ease-in-out infinite!important}
+.meal-screen[data-action=bite] .cat-motion{animation:dining-bite 1.4s ease-in-out!important}
+.meal-screen[data-action=swallow] .cat-motion{animation:dining-swallow .7s ease-in-out!important}
+.meal-screen.sleeping .cat-motion{animation:sleeping 4.8s ease-in-out infinite!important}
+.meal-screen.sleeping .meal-cat{top:39%;bottom:31%}.sleep-mark{top:22%;right:14%}
+.day-dinner.meal-screen:before{filter:brightness(.78) saturate(.8)}
+@keyframes dining-chew{50%{transform:scale(1.009,.997)}}
+@keyframes dining-bite{50%{transform:rotate(-.45deg) translateY(-1px)}}
+@keyframes dining-swallow{50%{transform:scaleY(.993)}}
+@media(max-height:650px){.meal-topbar{padding-top:12px}.meal-badge{font-size:15px;padding:6px 12px}.meal-badge>span:first-child{font-size:25px}.bubble-area{top:12%}.speech-bubble{padding:13px 16px 15px;width:78%}.speech-bubble p{font-size:17px}.bubble-cat .icon{width:26px;height:26px}.meal-cat{top:31%;bottom:31%}.meal-actions{--finish-height:56px;padding-bottom:max(14px,env(safe-area-inset-bottom))}#finish-button{min-height:56px;padding-top:6px;padding-bottom:6px;font-size:23px}.meal-action-label{top:81.5%;font-size:12px}}
+@media(orientation:landscape) and (max-height:600px){.meal-screen{min-height:390px}.meal-topbar{padding-left:4%}.bubble-area,.meal-screen.sleeping .bubble-area{top:19%;left:53%;width:44%;padding:0}.speech-bubble{width:100%;padding:14px 17px}.speech-bubble p{font-size:17px}.meal-cat,.meal-screen.sleeping .meal-cat{left:4%;top:21%;bottom:30%;width:49%;margin:0}.meal-plate{left:16%;top:70%;width:26%;height:17%}.table-contact-shadow{left:12%;width:33%}.meal-action-label{left:5%;width:48%;top:88%}.meal-actions{left:54%;right:3%;width:43%;bottom:6%;padding:12px 22px 10px}.rays-left{left:0}.rays-right{right:0}.sleep-mark{top:8%;right:15%}}
+@media(prefers-reduced-motion:reduce){.meal-screen[data-action] .cat-motion,.meal-cat{animation:none!important}.stage-layer{transition:none}}

@@ -31,8 +31,8 @@
 
 - iPhone Safari・ホーム画面PWAの実機、通知・電話後の音の再開、iOS消音スイッチ、画面消灯とWake Lock。
 - 鳴き声はオリジナル合成音で、利用者による聞き心地の採否は未確定。
-- 画像の縁、視点差、前足を寄せる簡易アニメーションの最終デザイン確認。
-- GitHub Pagesへの今回の更新の公開。作業フォルダーにGit管理情報はない。
+- 支給されたホーム・睡眠画像と新しい食事ポーズの視覚的な統一感の実機確認。疑似的な手は今回の食卓更新で削除。
+- 公開用リポジトリの作業コピーは `.github-publish/`。2026-10-27のv8公開は成功済み。以下の食卓更新はv9として別途公開確認する。
 
 検証スクリプト：`tools/verify-app.cjs`。Playwrightを利用可能なNODE_PATHとChrome実行ファイル（環境変数MOCHI_CHROMEで変更可）が必要。テスト用HTTPサーバーを内部で起動する。
 
@@ -49,3 +49,11 @@
 `tools/verify-play-design.cjs` で確認。390×844（丸い姿・最大体型）、320×568（細身・12文字の名前）、844×390（横向き）で、吹き出しが顔側を指すこと、本文が吹き出し内に収まること、終了ボタンの文字とイラスト・矢印が重ならないこと、横はみ出しがないことを確認。Zen Maru Gothicの実フォント読込を確認し、v8キャッシュでのオフライン取得成功。
 
 実画面：`output/verification/play-refined.png`、`play-refined-small.png`、`play-refined-large-cat.png`、`play-refined-longname.png`、`play-refined-landscape.png`。
+
+## 食卓・食事ポーズの確認（2026-10-27、v9）
+
+- `tools/verify-dining.cjs`：9体型に対して3行動タイミング、計27ケースを検証。目安時間到達の体型09は満足して休む。吹き出し・終了確認で食事が一時停止し、終了後に再開する。疑似的な胸元の手はDOMに存在しない。
+- 390×844、320×568、844×390、600×900で、ひとくち・もぐもぐ・満足と、お皿の3段階を確認。猫の耳、足元・食卓のつながり、素材の隣セルの映り込みを目視確認し、アトラスの表示範囲とSVGクリップを修正。
+- `tools/verify-app.cjs`：開始・登録・名前差し込み・タップ制限・9体型の境界・睡眠・終了の8秒待機・実AudioContextの非重複・再読み込み復帰を確認。v9キャッシュで新しい食卓背景、アトラス3枚、お皿、メタデータの全6件をオフライン取得（200）できること、オフラインで食事開始できることを確認。
+- 実画面：`output/verification/dining-bite.png`、`dining-chew.png`、`dining-full.png`、`dining-small.png`、`dining-landscape.png`、`dining-desktop.png`。
+- 音声の差し替えは今回の更新範囲外。参考動画の聴取・比較サンプル・利用者の試聴は未完了。

@@ -1,5 +1,7 @@
 # 素材の出自（2026-10-27）
 
+- 食卓の承認モックに基づく追加素材：`dining/early.png`、`middle.png`、`late.png` は9体型×3ポーズの透過アトラス、`dining/plates.png` は食べ物3段階、`background/dining-room.png` は食卓と椅子を含む背景。組み込み画像生成を使用。プロンプト全文は [dining/PROVENANCE.md](dining/PROVENANCE.md)。参照した支給キャラクター画像は保持し、PNGの画素は変更していない。表示範囲のみ `dining/manifest.json` に記録。
+
 - `character/stage-01.png`〜`stage-04.png`、`stage-06.png`〜`stage-10.png`：ユーザー提供の「デザイン/体型XX.png」をコピー。元画像を変更していない。
 - `character/stage-05.png`：ユーザー提供「デザイン/体型05.png」から市松模様を除去した派生画像。組み込み画像生成ツールを使用。APIキー・CLIは使用していない。
 - `background/room.png`：ユーザー提供の食事画面イメージから、UIとキャラクターを除去した派生背景。同じ組み込み画像生成ツールを使用。
