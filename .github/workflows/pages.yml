@@ -24,10 +24,13 @@ jobs:
         uses: actions/configure-pages@v5
       - name: Prepare site files
         run: |
-          mkdir -p _site/icons _site/assets/character
-          cp index.html styles.css app.js manifest.webmanifest sw.js _site/
+          mkdir -p _site/icons _site/assets/character _site/assets/audio _site/assets/background _site/assets/fonts
+          cp index.html styles.css app.js audio.js messages.js manifest.webmanifest sw.js _site/
           cp icons/icon.svg _site/icons/
-          cp assets/character/*.jpg _site/assets/character/
+          cp assets/character/stage-*.png assets/character/manifest.json _site/assets/character/
+          cp assets/audio/*.wav _site/assets/audio/
+          cp assets/background/*.png _site/assets/background/
+          cp assets/fonts/*.ttf assets/fonts/*.txt _site/assets/fonts/
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
@@ -42,4 +45,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-

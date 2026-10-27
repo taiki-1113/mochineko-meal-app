@@ -1,106 +1,39 @@
 <!doctype html>
-<html lang="ja">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#fff9f0">
-  <meta name="description" content="もちねこが食事の時間をそっと応援する、家族のための食事タイマー。">
-  <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="./icons/icon.svg">
-  <link rel="stylesheet" href="./styles.css">
-  <title>もちねこ食事アプリ</title>
-</head>
-<body>
-  <main id="app" class="app-shell">
-    <section id="home-screen" class="screen home-screen" aria-labelledby="app-title">
-      <header class="topbar">
-        <a class="brand" href="./" aria-label="もちねこ食事アプリ ホーム">
-          <span class="brand-mark" aria-hidden="true">もち</span>
-          <span class="brand-copy"><strong>もちねこ</strong><small>ごはんのじかん</small></span>
-        </a>
-        <button class="icon-button" id="settings-open" aria-label="設定を開く" title="設定">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.1a3.9 3.9 0 1 0 0 7.8 3.9 3.9 0 0 0 0-7.8Zm9 4.9a8.9 8.9 0 0 0-.1-1.3l1.7-1.3-1.7-3-2 .8a8.2 8.2 0 0 0-2.2-1.3L16.4 4h-3.5l-.4 2.2a8.2 8.2 0 0 0-2.2 1.3l-2-.8-1.7 3 1.7 1.3a8.9 8.9 0 0 0 0 2.6l-1.7 1.3 1.7 3 2-.8a8.2 8.2 0 0 0 2.2 1.3l.4 2.2h3.5l.4-2.2a8.2 8.2 0 0 0 2.2-1.3l2 .8 1.7-3-1.7-1.3c.1-.4.1-.8.1-1.3Z"/></svg>
-        </button>
-      </header>
-
-      <div class="home-content">
-        <div class="welcome-copy">
-          <span class="eyebrow"><span class="eyebrow-dot"></span> きょうも、ゆっくりいこう</span>
-          <h1 id="app-title">ごはんの時間を、<br><em>もちねこと。</em></h1>
-          <p>食べるペースはみんなそれぞれ。<br>もちねこが、そばで見守るよ。</p>
-        </div>
-
-        <div class="home-cat-wrap" aria-label="白くて茶色模様のもちねこ">
-          <div class="sun-halo"></div>
-          <span class="sparkle sparkle-one">✳</span><span class="sparkle sparkle-two">✦</span>
-          <div class="cat-stage home-cat" id="home-cat"></div>
-          <div class="cat-caption"><span>もちねこ</span><small>「まあ、のんびりね。」</small></div>
-        </div>
-
-        <div class="start-card">
-          <div class="card-heading"><div><span class="step-label">01 <i></i> じゅんび</span><h2>だれと食べる？</h2></div><span class="paw-stamp" aria-hidden="true">🐾</span></div>
-          <div id="child-picker" class="child-picker" role="group" aria-label="子どもを選択"></div>
-          <div class="meal-select-row">
-            <div class="meal-label"><span class="meal-icon" id="meal-icon">☀️</span><span><small>きょうのごはん</small><strong id="meal-label">朝ごはん</strong></span></div>
-            <div class="meal-controls" role="group" aria-label="食事区分">
-              <button class="meal-option" data-meal="breakfast" aria-label="朝ごはん">朝</button>
-              <button class="meal-option" data-meal="lunch" aria-label="昼ごはん">昼</button>
-              <button class="meal-option" data-meal="dinner" aria-label="夜ごはん">夜</button>
-            </div>
-          </div>
-          <button id="start-button" class="primary-button"><span>いただきます</span><span class="button-arrow" aria-hidden="true">→</span></button>
-          <p id="start-hint" class="start-hint" aria-live="polite">準備ができたら、はじめよう</p>
-        </div>
-      </div>
-      <footer class="home-footer"><span>食べる量も、ペースも、その子のままで。</span><span class="offline-indicator"><i></i> オフラインでも使えます</span></footer>
-    </section>
-
-    <section id="meal-screen" class="screen meal-screen hidden" aria-labelledby="meal-title">
-      <header class="meal-topbar">
-        <button id="meal-back" class="back-button" aria-label="ホームに戻る">←</button>
-        <div><span class="meal-top-label" id="meal-screen-label">きょうのごはん</span><h1 id="meal-title">いただきます</h1></div>
-        <span class="meal-top-paw" aria-hidden="true">🐾</span>
-      </header>
-      <div class="meal-scene" id="meal-scene">
-        <div class="scene-sun"></div><div class="scene-cloud cloud-a"></div><div class="scene-cloud cloud-b"></div>
-        <div class="scene-sparkle scene-sparkle-a">✦</div><div class="scene-sparkle scene-sparkle-b">✳</div>
-        <div id="meal-cat" class="cat-stage meal-cat" role="button" tabindex="0" aria-label="もちねこをタップして応援をきく"></div>
-        <div class="tap-note" id="tap-note">タップしてみてね</div>
-      </div>
-      <div class="meal-status"><span id="stage-pill" class="stage-pill">食事中 · まるまる</span><p id="meal-message">もちねこが、となりで見守っているよ。</p></div>
-      <div class="meal-actions"><button id="finish-button" class="finish-button"><span aria-hidden="true">☕</span> ごちそうさま</button><small>食べるペースは、あなたのペースで。</small></div>
-    </section>
-  </main>
-
-  <div id="settings-modal" class="modal-backdrop hidden" role="presentation">
-    <section class="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-      <header class="modal-header"><div><span class="eyebrow">おうちのひとへ</span><h2 id="settings-title">設定</h2></div><button id="settings-close" class="icon-button close-button" aria-label="閉じる">×</button></header>
-      <div class="settings-body">
-        <section class="setting-section"><div class="setting-title"><span class="setting-icon">♡</span><div><h3>いっしょに食べる子</h3><p>ニックネームは3人まで登録できます</p></div></div>
-          <div id="settings-children" class="settings-children"></div>
-          <form id="child-form" class="child-form"><label class="sr-only" for="child-name">ニックネーム</label><input id="child-name" maxlength="12" autocomplete="off" placeholder="ニックネームを入力"><button class="add-child-button" type="submit" aria-label="追加">＋</button></form>
-          <p id="child-limit-note" class="field-note">お名前はこの端末の中だけに保存されます。</p>
-        </section>
-        <section class="setting-section time-settings"><div class="setting-title"><span class="setting-icon">◷</span><div><h3>食事のめやす時間</h3><p>食事区分ごとに設定できます</p></div></div>
-          <div class="duration-list" id="duration-list"></div>
-          <p class="field-note">残り時間は画面に表示されません。もちねこの変化の目安です。</p>
-        </section>
-        <section class="setting-section reset-section"><button id="reset-button" class="reset-button">この端末の設定をリセット</button><p class="field-note">子どもの登録と食事時間を削除します。</p></section>
-      </div>
-      <footer class="modal-footer"><span>データは端末内に保存されます</span><button id="settings-done" class="done-button">できた</button></footer>
-    </section>
-  </div>
-
-  <div id="confirm-modal" class="modal-backdrop hidden" role="presentation">
-    <section class="confirm-panel" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
-      <div class="confirm-art" aria-hidden="true">☕</div><span class="eyebrow">おつかれさま</span><h2 id="confirm-title">もうおしまいにする？</h2><p>もちねこも、ごちそうさまの<br>じゅんびをしているよ。</p>
-      <button id="confirm-finish" class="primary-button"><span>ごちそうさま</span><span class="button-arrow">→</span></button><button id="confirm-continue" class="continue-button">もう少しつづける</button>
-    </section>
-  </div>
-
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="./app.js?v=5" defer></script>
-</body>
-</html>
-
+<html lang="ja"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#fff4df"><meta name="description" content="もちねこといっしょに、のんびりごはん。">
+<link rel="preload" href="./assets/fonts/ZenMaruGothic-Bold.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icons/icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="./icons/icon.svg"><link rel="stylesheet" href="./styles.css?v=8"><title>もちねこ食事アプリ</title>
+</head><body>
+<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden"><defs>
+<symbol id="icon-paw" viewBox="0 0 32 32"><ellipse cx="7" cy="9" rx="3.4" ry="4.4"/><ellipse cx="15" cy="5.5" rx="3.3" ry="4.5"/><ellipse cx="24" cy="8.5" rx="3.4" ry="4.4"/><ellipse cx="28" cy="17" rx="3" ry="4"/><path d="M8 23c0-6 5-11 9-11s9 6 9 11-5 4-9 4-9 1-9-4Z"/></symbol>
+<symbol id="icon-meal" viewBox="0 0 32 32"><path d="M6 3v9m4-9v9m4-9v9c0 4-8 4-8 0m4 4v13m15-26c-7 4-7 13 0 14V3Zm0 14v12"/></symbol>
+<symbol id="icon-child" viewBox="0 0 64 64"><path d="M12 33C7 18 15 6 30 6c17-1 26 12 22 28Z" fill="#805634" stroke="none"/><path d="M14 29c-10-3-10 13 0 13m36-13c10-3 10 13 0 13" fill="#ffebc9" stroke="#805634" stroke-width="2.6"/><path d="M13 27c0-10 8-15 18-15s20 7 20 17v9c0 13-8 20-19 20S13 50 13 38Z" fill="#fff0d3" stroke="#805634" stroke-width="2.6"/><path d="M12 30c8 1 14-6 17-13 5 8 13 12 24 12V17L36 9 21 12Z" fill="#805634" stroke="none"/><ellipse cx="23" cy="35" rx="2.6" ry="3.6" fill="#805634" stroke="none"/><ellipse cx="41" cy="35" rx="2.6" ry="3.6" fill="#805634" stroke="none"/><ellipse cx="18" cy="42" rx="4.8" ry="3" fill="#edb19b" opacity=".65" stroke="none"/><ellipse cx="46" cy="42" rx="4.8" ry="3" fill="#edb19b" opacity=".65" stroke="none"/><path d="M26 44q6 7 12 0" fill="none" stroke="#805634" stroke-width="2.8"/><path d="m54 9 3-4m0 11 5-1" stroke="#eabd63" stroke-width="3"/></symbol>
+<symbol id="icon-hands" viewBox="0 0 40 40"><path d="m4 32 8-9 5-16c1-3 4-3 4 1l-1 15-4 8 2 4m18-3-8-9-5-16c-1-3-4-3-4 1l1 15 4 8-2 4M4 32l9 5 5-5m18 0-9 5-5-5M7 10l3 3m23-3-3 3M20 1v3M3 20h4m26 0h4"/></symbol>
+<symbol id="icon-cat" viewBox="0 0 32 32"><path d="M4 14 5 3l8 6h6l8-6 1 11c6 17-30 17-24 0Zm6 5a1.6 1.6 0 1 0 0-3.2 1.6 1.6 0 0 0 0 3.2Zm12 0a1.6 1.6 0 1 0 0-3.2 1.6 1.6 0 0 0 0 3.2ZM14 21l2 3 2-3Z" fill-rule="evenodd"/></symbol>
+<symbol id="icon-mochi-face" viewBox="0 0 64 64"><path d="M10 28 12 8q1-4 5-1l11 9h9l11-9q4-3 5 2l2 21c12 28-59 30-45-2Z" fill="#fff8e9" stroke="#875a35" stroke-width="3.5"/><path d="m14 13 3 16 12-11-8-5Zm29 0-7 5 12 12 2-17Z" fill="#c18c56" stroke="none"/><path d="M11 30c2-10 6-12 13-12l6 8-6 8Z" fill="#c18c56" stroke="none"/><path d="M18 34h9m11 0h9" fill="none" stroke="#70472e" stroke-width="3.4"/><ellipse cx="15" cy="42" rx="5" ry="2.5" fill="#efb29f" stroke="none"/><ellipse cx="49" cy="42" rx="5" ry="2.5" fill="#efb29f" stroke="none"/><path d="m29 39 3 3 3-3Z" fill="#e99c86" stroke="none"/><path d="M32 42q-4 6-8 1m8-1q4 6 8 1" fill="none" stroke="#875a35" stroke-width="2"/></symbol>
+<symbol id="icon-finish-cat" viewBox="0 0 64 64"><path d="M10 27 12 7q1-4 5-1l11 9h9l11-9q4-3 5 2l2 20c12 28-59 31-45-1Z" fill="#fffdfa" stroke="#fffdfa" stroke-width="2"/><path d="m16 13 2 11 9-6Zm30 0-8 5 10 6Z" fill="#ffd1c7" stroke="none"/><ellipse cx="23" cy="34" rx="3" ry="3.8" fill="#ee8989" stroke="none"/><ellipse cx="42" cy="34" rx="3" ry="3.8" fill="#ee8989" stroke="none"/><path d="m29 42 3 3 4-3Z" fill="#ee8989" stroke="none"/><path d="M26 46q6 7 13 0" fill="none" stroke="#ee8989" stroke-width="2.3"/></symbol>
+<symbol id="icon-finish-rays" viewBox="0 0 24 48"><path d="m17 10-8-6M13 24H3m14 14-8 6" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/></symbol>
+</defs></svg>
+<main id="app" class="app-shell">
+<section id="home-screen" class="screen home-screen" aria-labelledby="app-title">
+<div class="home-hero"><h1 id="app-title"><span class="title-paw" aria-hidden="true"><svg class="icon"><use href="#icon-paw"/></svg></span>もちねこ<small>食事アプリ</small></h1><div class="home-cat" id="home-cat" aria-label="まるいもちねこ"></div></div>
+<div class="home-controls">
+<div class="selection-card child-card"><span class="card-icon child-icon" aria-hidden="true"><svg class="icon"><use href="#icon-child"/></svg></span><label for="child-picker"><span>子どもの選択</span><span class="select-wrap"><select id="child-picker" aria-describedby="start-hint"></select><span aria-hidden="true">⌄</span></span></label></div>
+<fieldset class="selection-card meal-card"><legend class="sr-only">食事区分</legend><span class="card-icon meal-icon" aria-hidden="true"><svg class="icon"><use href="#icon-meal"/></svg></span><div class="meal-choice"><p>食事区分</p><div class="meal-controls"><button type="button" class="meal-option" data-meal="breakfast"><span aria-hidden="true">☀</span> 朝食</button><button type="button" class="meal-option" data-meal="lunch"><span aria-hidden="true">☀</span> 昼食</button><button type="button" class="meal-option" data-meal="dinner"><span aria-hidden="true">☾</span> 夕食</button></div></div></fieldset>
+<button id="start-button" class="primary-button"><span class="hands" aria-hidden="true"><svg class="icon"><use href="#icon-hands"/></svg></span><span id="start-label">いただきます</span><span class="button-arrow" aria-hidden="true">→</span></button><p id="start-hint" class="start-hint" aria-live="polite"></p>
+<div class="settings-links"><button id="children-settings" class="secondary-button"><svg class="icon" aria-hidden="true"><use href="#icon-child"/></svg> 子どもの設定</button><button id="time-settings" class="secondary-button"><span aria-hidden="true">◷</span> 時間・音の設定</button></div><p id="offline-status" class="offline-status" role="status">初回はオンラインで開いてください</p><div class="footer-paw" aria-hidden="true">─ 🐾 ─</div>
+</div></section>
+<section id="meal-screen" class="screen meal-screen hidden" aria-label="もちねこと ごはん"><div id="meal-scene" class="meal-scene">
+<header class="meal-topbar"><span class="meal-badge"><span id="meal-icon" aria-hidden="true">☀</span><span id="meal-label">ひるごはん</span></span></header>
+<div class="bubble-area"><div id="speech-bubble" class="speech-bubble hidden" role="status" aria-live="polite" aria-atomic="true"><svg id="bubble-tail" class="bubble-tail" aria-hidden="true"><path/></svg><span aria-hidden="true" class="bubble-cat"><svg class="icon"><use href="#icon-mochi-face"/></svg></span><p id="bubble-text"></p></div><span id="sleep-mark" class="sleep-mark hidden" aria-hidden="true">Zzz</span></div>
+<button id="meal-cat" class="meal-cat" aria-label="もちねこを なでる"><span class="cat-motion" id="cat-motion"><span id="cat-visual" class="cat-visual"></span><span class="greeting-paws" aria-hidden="true"><i></i><i></i></span></span></button>
+<div class="meal-actions"><span class="finish-rays rays-left" aria-hidden="true"><svg><use href="#icon-finish-rays"/></svg></span><button id="finish-button" class="finish-button"><span class="cat-face" aria-hidden="true"><svg class="icon"><use href="#icon-finish-cat"/></svg></span><span class="finish-label">ごちそうさま</span><span class="finish-chevron" aria-hidden="true">›</span></button><span class="finish-rays rays-right" aria-hidden="true"><svg><use href="#icon-finish-rays"/></svg></span></div></div></section>
+</main>
+<div id="settings-modal" class="modal-backdrop hidden"><section class="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title" tabindex="-1"><header class="modal-header"><h2 id="settings-title">設定</h2><button id="settings-close" class="close-button" aria-label="設定を閉じる">×</button></header><div class="settings-body">
+<section id="child-section" class="setting-section"><h3>子どもの設定</h3><p>ひらがなのニックネームを、3人まで登録できます。</p><div id="settings-children"></div><form id="child-form" class="child-form"><label for="child-name">ニックネーム（ひらがな・12文字まで）</label><div class="child-input-row"><input id="child-name" maxlength="12" autocomplete="off" placeholder="たろう" required aria-describedby="name-error"><button id="child-submit" type="submit" class="small-button">追加</button><button id="child-cancel" type="button" class="text-button hidden">キャンセル</button></div><p id="name-error" class="field-error" aria-live="polite"></p></form><p class="field-note">名前はこの端末に保存され、ときどき吹き出しに登場します。</p></section>
+<section id="duration-section" class="setting-section"><h3>食事の目安時間</h3><div id="duration-list"></div><p class="field-note">10〜60分、5分ずつ設定できます。残り時間は表示しません。</p></section>
+<section class="setting-section sound-section"><label class="sound-setting" for="sound-enabled"><span><strong>もちねこの音</strong><small>鳴き声・寝息</small></span><input id="sound-enabled" type="checkbox" role="switch"><span class="switch-track" aria-hidden="true"></span></label><p class="field-note">音をオフにしても、吹き出しと動きは表示されます。</p><button id="sound-preview" class="text-button">鳴き声を試す</button></section>
+<section class="setting-section"><button id="reset-button" class="text-button danger">この端末の設定をリセット</button><p class="field-note">登録した名前・時間・音の設定を削除します。</p></section></div>
+<footer class="modal-footer"><span>データはこの端末の中だけに保存</span><button id="settings-done" class="small-button">完了</button></footer></section></div>
+<div id="confirm-modal" class="modal-backdrop hidden"><section class="confirm-panel" role="dialog" aria-modal="true" aria-labelledby="confirm-title" tabindex="-1"><span class="confirm-paw" aria-hidden="true">🐾</span><h2 id="confirm-title">ごはんを<br>おしまいにする？</h2><button id="confirm-finish" class="finish-button">ごちそうさま</button><button id="confirm-continue" class="secondary-button">まだ たべる</button></section></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div><script src="./messages.js?v=8" defer></script><script src="./audio.js?v=8" defer></script><script src="./app.js?v=8" defer></script></body></html>

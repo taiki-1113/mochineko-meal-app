@@ -1,0 +1,5 @@
+.github-publish/
+output/
+node_modules/
+_site/
+__pycache__/
