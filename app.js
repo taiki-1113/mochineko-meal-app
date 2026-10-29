@@ -8,6 +8,11 @@
     dinner: { label: 'よるごはん', settingsLabel: '夕食', icon: '☾', theme: 'day-dinner' }
   };
   const $ = id => document.getElementById(id);
+  // Recover an older cached HTML shell before attaching picker events.
+  if ($('child-picker')?.tagName === 'SELECT') {
+    const oldLabel=$('child-picker').closest('label');
+    if(oldLabel)oldLabel.outerHTML='<div class="child-selection"><span id="child-selection-label">子どもの選択 <small>2人まで一緒に選べます</small></span><div id="child-picker" role="group" aria-labelledby="child-selection-label"></div></div>';
+  }
   const audio = window.MochiAudio, messages = window.MochiMessages;
   const validName = name => /^[ぁ-ゖー]{1,12}$/u.test(name);
   const duration = n => Math.max(10, Math.min(60, Math.round((Number(n) || 30) / 5) * 5));
@@ -361,7 +366,7 @@
     let reloading=false;
     navigator.serviceWorker.addEventListener('controllerchange',()=>{if(reloading)return;reloading=true;location.reload();});
     window.addEventListener('load',async()=>{
-      try{await navigator.serviceWorker.register('./sw.js');await navigator.serviceWorker.ready;
+      try{await navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'});await navigator.serviceWorker.ready;
         if(navigator.serviceWorker.controller){offlineReady=true;$('offline-status').textContent='オフラインで利用できます';}
       }catch{$('offline-status').textContent='オフライン準備には通信が必要です';}
     });

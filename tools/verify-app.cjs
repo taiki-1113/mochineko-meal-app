@@ -153,7 +153,7 @@ const sleepCheck = ms => new Promise(r=>setTimeout(r,ms));
   await offline.setOffline(true);await off.reload();
   await off.locator('#home-cat image').waitFor();
   const result=await off.evaluate(async()=>{
-    const keys=await caches.keys();const cache=await caches.open('mochineko-shell-v12');const requests=await cache.keys();
+    const keys=await caches.keys();const cache=await caches.open('mochineko-shell-v13');const requests=await cache.keys();
     return {keys,audio:requests.filter(r=>r.url.endsWith('.wav')).length,images:requests.filter(r=>/stage-\d+\.png$/.test(r.url)).length,status:(await fetch('./assets/audio/happy-1.wav')).status,manifest:(await fetch('./assets/character/manifest.json')).status,dining:await Promise.all(['./assets/background/dining-room.png','./assets/dining/manifest.json','./assets/dining/early.png','./assets/dining/middle.png','./assets/dining/late.png','./assets/dining/plates.png'].map(async url=>(await fetch(url)).status))};
   });
   assert.equal(result.audio,13);assert.equal(result.images,10);assert.equal(result.status,200);assert.equal(result.manifest,200);
