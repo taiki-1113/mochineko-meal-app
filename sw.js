@@ -1,7 +1,7 @@
-const CACHE_NAME = 'mochineko-shell-v11';
+const CACHE_NAME = 'mochineko-shell-v12';
 const STAGES = Array.from({length:10}, (_,i) => `./assets/character/stage-${String(i+1).padStart(2,'0')}.png`);
 const MEOWS = ['happy','relaxed','affectionate','surprised'].flatMap(group => [1,2,3].map(n => `./assets/audio/${group}-${n}.wav`));
-const APP_SHELL = ['./','./index.html','./styles.css?v=11','./app.js?v=11','./messages.js?v=11','./audio.js?v=11','./manifest.webmanifest','./icons/icon.svg','./assets/background/room.png','./assets/background/home-sky.png','./assets/background/dining-room.png','./assets/dining/early.png','./assets/dining/middle.png','./assets/dining/late.png','./assets/dining/plates.png','./assets/dining/manifest.json','./assets/character/manifest.json','./assets/fonts/ZenMaruGothic-Bold.ttf','./assets/fonts/OFL-ZenMaruGothic.txt',...STAGES,...MEOWS,'./assets/audio/sleep.wav'];
+const APP_SHELL = ['./','./index.html','./styles.css?v=12','./app.js?v=12','./messages.js?v=12','./audio.js?v=12','./manifest.webmanifest','./icons/icon.svg','./assets/background/room.png','./assets/background/home-sky.png','./assets/background/dining-room.png','./assets/dining/early.png','./assets/dining/middle.png','./assets/dining/late.png','./assets/dining/plates.png','./assets/dining/manifest.json','./assets/character/manifest.json','./assets/fonts/ZenMaruGothic-Bold.ttf','./assets/fonts/OFL-ZenMaruGothic.txt',...STAGES,...MEOWS,'./assets/audio/sleep.wav'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)).then(()=>self.skipWaiting()));
 });

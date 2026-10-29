@@ -46,7 +46,7 @@ let browser,server;
     await off.goto(base);await off.waitForFunction(()=>!!navigator.serviceWorker.controller,null,{timeout:60000});await off.waitForTimeout(300);
     await offline.setOffline(true);await off.reload();
     const cached=await off.evaluate(async()=>({keys:await caches.keys(),sky:(await fetch('./assets/background/home-sky.png')).status}));
-    assert.ok(cached.keys.includes('mochineko-shell-v11'));assert.equal(cached.sky,200);await offline.close();
+    assert.ok(cached.keys.includes('mochineko-shell-v12'));assert.equal(cached.sky,200);await offline.close();
     console.log(JSON.stringify({status:'PASS',before,after:size,controlsRatio:ratio,offline:cached,screenshots:out},null,2));
   }
   await browser.close();server.close();

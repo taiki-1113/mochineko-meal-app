@@ -20,11 +20,13 @@
       if (!value || typeof value !== 'object') return base;
       // Keep old nicknames for explicit editing rather than silently deleting them.
       return { ...base, children: Array.isArray(value.children) ? value.children.filter(c => c && typeof c.id === 'string' && typeof c.name === 'string').slice(0,3) : [],
-        durations: Object.fromEntries(Object.keys(meals).map(k => [k, duration(value.durations?.[k])])), soundEnabled:value.soundEnabled !== false, selectedChildId:value.selectedChildId || null };
+        durations: Object.fromEntries(Object.keys(meals).map(k => [k, duration(value.durations?.[k])])), soundEnabled:value.soundEnabled !== false, selectedChildId:value.selectedChildId || null, selectedChildIds:Array.isArray(value.selectedChildIds)?value.selectedChildIds:[] };
     } catch { storageFailed = true; return base; }
   }
   let data = load(), selectedMeal = detectMeal();
   let selectedChildId = data.children.some(c => c.id === data.selectedChildId) ? data.selectedChildId : data.children[0]?.id || null;
+  let companionId = [...new Set(data.selectedChildIds || [])].find(id=>id!==selectedChildId&&data.children.some(c=>c.id===id)) || null;
+  const selectedIds = () => [selectedChildId,companionId].filter(Boolean);
   let session = null, cue = null, cueSerial = 0, cooldownUntil = 0, editingId = null;
   let pendingStart = false, tickTimer, cueTimer, toastTimer, wakeLock, previousFocus;
   let assets = {}, lastStage = -1, lastMilestone = 0, sleeping = false;
@@ -38,7 +40,7 @@
     try { value === null ? localStorage.removeItem(key) : localStorage.setItem(key, JSON.stringify(value)); return true; }
     catch { if (!storageFailed) showToast('このたんまつに ほぞんできません'); storageFailed = true; return false; }
   }
-  function persist() { data.selectedChildId = selectedChildId; write(STORAGE_KEY, data); }
+  function persist() { data.selectedChildId = selectedChildId; data.selectedChildIds=selectedIds(); write(STORAGE_KEY, data); }
   function saveSession() { if (session) write(SESSION_KEY, session); }
   function showToast(text) { $('toast').textContent = text; $('toast').classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => $('toast').classList.remove('show'), 3000); }
   function art(stage, pose = null) {
@@ -121,10 +123,8 @@
   }
   function renderHome() {
     $('home-cat').innerHTML = art(5);
-    const select = $('child-picker'); select.replaceChildren();
-    if (!data.children.length) select.add(new Option('ニックネームを登録', ''));
-    else for (const child of data.children) select.add(new Option(child.name, child.id));
-    select.value = selectedChildId || '';
+    const picker = $('child-picker');
+    picker.innerHTML = data.children.length ? data.children.map(child=>`<button type="button" class="child-option" data-child="${escapeHtml(child.id)}" aria-pressed="${selectedIds().includes(child.id)}"><span aria-hidden="true">${selectedIds().includes(child.id)?'✓':'＋'}</span> ${escapeHtml(child.name)}</button>`).join('') : '<button type="button" class="child-register">ニックネームを登録</button>';
     for (const b of document.querySelectorAll('.meal-option')) { const active = b.dataset.meal === selectedMeal; b.classList.toggle('active',active); b.setAttribute('aria-pressed', String(active)); }
     $('home-screen').classList.remove(...Object.values(meals).map(m => m.theme));
     $('home-screen').classList.add(meals[selectedMeal].theme);
@@ -217,8 +217,8 @@
     if (cue) finishCue(cue.token);
     if (!session || session.phase !== 'active' || sleeping || cue || document.hidden || !$('confirm-modal').classList.contains('hidden')) return;
     if (Date.now() >= session.nextMessageAt) {
-      const child = data.children.find(c=>c.id===session.childId);
-      const message = messages.next(session, child?.name || '');
+      const names = (session.childIds || [session.childId]).map(id=>data.children.find(c=>c.id===id)?.name).filter(Boolean).join('、');
+      const message = messages.next(session, names);
       scheduleMessage(); beginCue(message.text,message.group,'normal');
     }
   }
@@ -227,6 +227,7 @@
     $('home-screen').classList.add('hidden'); $('meal-screen').className = `screen meal-screen ${meals[session.meal].theme}`;
     $('meal-label').textContent = meals[session.meal].label; $('meal-icon').textContent = meals[session.meal].icon;
     $('finish-button').disabled = false; lastStage = -1; sleeping = false; lastMilestone = -1;
+    $('meal-screen').classList.toggle('two-children',(session.childIds || [session.childId]).length===2);
     diningStage=-1; diningPose=2; diningClock=Number.isFinite(session.diningClock)?session.diningClock:0; lastDiningAt=performance.now(); growthHintUntil=0;
     $('cat-visual').replaceChildren(); lastElapsed = Math.max(0,(Date.now()-session.startedAt)/1000); lastMono = performance.now();
     clearInterval(tickTimer); tickTimer = setInterval(tick,250); tick(); requestWakeLock();
@@ -234,9 +235,9 @@
   function openMeal() {
     if (session) return;
     const child = data.children.find(c=>c.id===selectedChildId);
-    if (!child || !validName(child.name)) { openSettings(); pendingStart=true; showToast('ひらがなの名前を登録してください'); return; }
+    if (!child || selectedIds().some(id=>!validName(data.children.find(c=>c.id===id)?.name || ''))) { openSettings(); pendingStart=true; showToast('ひらがなの名前を登録してください'); return; }
     audio.unlock(); audio.setEnabled(data.soundEnabled);
-    session = { version:2, childId:child.id, meal:selectedMeal, duration:data.durations[selectedMeal], startedAt:Date.now(), phase:'opening', messageCount:0 };
+    session = { version:3, childId:child.id, childIds:selectedIds(), meal:selectedMeal, duration:data.durations[selectedMeal], startedAt:Date.now(), phase:'opening', messageCount:0 };
     scheduleMessage(); setupMeal(); saveSession();
     beginCue('てを あわせて、いただきます','happy','opening');
   }
@@ -271,11 +272,12 @@
   function restoreSession() {
     try {
       const saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');
-      const child=data.children.find(c=>c.id===saved?.childId);
+      const ids=[...new Set(Array.isArray(saved?.childIds)?saved.childIds:[saved?.childId])].filter(id=>data.children.some(c=>c.id===id&&validName(c.name))).slice(0,2);
+      const child=data.children.find(c=>c.id===ids[0]);
       if (!saved || !Number.isFinite(saved.startedAt) || saved.startedAt<=0 || !meals[saved.meal] || !child || !validName(child.name)) { if(saved) write(SESSION_KEY,null); return; }
-      session={...saved,duration:duration(saved.duration),phase:['opening','active','ending'].includes(saved.phase)?saved.phase:'active'};
+      session={...saved,childId:ids[0],childIds:ids,duration:duration(saved.duration),phase:['opening','active','ending'].includes(saved.phase)?saved.phase:'active'};
       session.nextMessageAt = Date.now()+60000+Math.floor(Math.random()*60001);
-      selectedChildId=saved.childId; selectedMeal=saved.meal; setupMeal();
+      selectedChildId=ids[0]; companionId=ids[1]||null; persist(); selectedMeal=saved.meal; setupMeal();
       if (session.phase==='ending') {
         const remaining=Math.max(0,(session.finishAt||Date.now())-Date.now());
         if (!remaining) { goHome(); return; }
@@ -295,7 +297,17 @@
     if (session.nextMessageAt<Date.now()) scheduleMessage();
     tick(); if (sleeping && audio.ready && data.soundEnabled) audio.play('relaxed',{sleep:true});
   }
-  $('child-picker').addEventListener('change',e=>{ selectedChildId=e.target.value;persist(); });
+  $('child-picker').addEventListener('click',e=>{
+    const option=e.target.closest('[data-child]');
+    if(!option){if(e.target.closest('.child-register'))openSettings();return;}
+    const id=option.dataset.child;
+    if(id===companionId)companionId=null;
+    else if(id===selectedChildId){if(!companionId){showToast('1人以上選んでください');return;}selectedChildId=companionId;companionId=null;}
+    else if(!selectedChildId)selectedChildId=id;
+    else if(!companionId)companionId=id;
+    else {showToast('同時に選べるのは2人までです');return;}
+    persist();renderHome();
+  });
   document.querySelectorAll('.meal-option').forEach(b=>b.addEventListener('click',()=>{selectedMeal=b.dataset.meal;renderHome();}));
   $('children-settings').addEventListener('click',()=>openSettings());
   $('time-settings').addEventListener('click',()=>openSettings('duration-section'));
@@ -304,14 +316,14 @@
   $('settings-children').addEventListener('click',e=>{
     const edit=e.target.closest('[data-edit]'), remove=e.target.closest('[data-remove]');
     if(edit){const child=data.children.find(c=>c.id===edit.dataset.edit);if(!child)return;editingId=child.id;renderSettings();$('child-name').value=child.name;$('child-submit').textContent='保存';$('child-cancel').classList.remove('hidden');$('child-name').focus();}
-    if(remove){data.children=data.children.filter(c=>c.id!==remove.dataset.remove);if(selectedChildId===remove.dataset.remove)selectedChildId=data.children[0]?.id||null;cancelEdit();persist();renderSettings();renderHome();}
+    if(remove){data.children=data.children.filter(c=>c.id!==remove.dataset.remove);if(companionId===remove.dataset.remove)companionId=null;if(selectedChildId===remove.dataset.remove){selectedChildId=companionId||data.children[0]?.id||null;companionId=null;}cancelEdit();persist();renderSettings();renderHome();}
   });
   $('child-cancel').addEventListener('click',()=>{cancelEdit();renderSettings();});
   $('child-form').addEventListener('submit',e=>{
     e.preventDefault(); const name=$('child-name').value.normalize('NFC').trim();
     if(!validName(name)){ $('name-error').textContent='ひらがなで1〜12文字入力してください';$('child-name').focus();return; }
     if(editingId){const child=data.children.find(c=>c.id===editingId);if(child)child.name=name;}
-    else {if(data.children.length>=3)return;const child={id:uid(),name};data.children.push(child);selectedChildId=child.id;}
+    else {if(data.children.length>=3)return;const child={id:uid(),name};data.children.push(child);selectedChildId=child.id;companionId=null;}
     cancelEdit();persist();renderSettings();renderHome();
     if(pendingStart){pendingStart=false;hideModal('settings-modal');openMeal();}else $('child-name').focus();
   });
@@ -319,7 +331,7 @@
   $('sound-enabled').addEventListener('change',e=>{data.soundEnabled=e.target.checked;audio.setEnabled(data.soundEnabled);if(data.soundEnabled)audio.unlock();persist();});
   let previewIndex = 0;
   $('sound-preview').addEventListener('click',()=>{if(!data.soundEnabled){showToast('音をオンにすると試せます');return;}const groups=[['happy','ごきげん'],['relaxed','のんびり'],['affectionate','あまえる'],['surprised','びっくり']];const [group,label]=groups[previewIndex++%4];audio.unlock();audio.play(group);showToast(label+'の なきごえ');});
-  $('reset-button').addEventListener('click',()=>{if(!confirm('この端末の名前・時間・音の設定を削除しますか？'))return;data=defaults();selectedChildId=null;selectedMeal=detectMeal();audio.setEnabled(true);cancelEdit();persist();renderSettings();renderHome();});
+  $('reset-button').addEventListener('click',()=>{if(!confirm('この端末の名前・時間・音の設定を削除しますか？'))return;data=defaults();selectedChildId=null;companionId=null;selectedMeal=detectMeal();audio.setEnabled(true);cancelEdit();persist();renderSettings();renderHome();});
   $('start-button').addEventListener('click',openMeal);$('meal-cat').addEventListener('click',playTap);
   $('finish-button').addEventListener('click',askFinish);$('confirm-finish').addEventListener('click',finishMeal);$('confirm-continue').addEventListener('click',continueMeal);
   document.addEventListener('keydown',e=>{
