@@ -103,8 +103,8 @@
     const satisfied = secs >= session.duration*60;
     if (!paused && !satisfied) diningClock += Math.max(0,now-lastDiningAt)/1000;
     lastDiningAt = now;
-    const cycle = diningClock % 23, bite = cycle % 5;
-    const action = sleeping ? 'sleep' : paused ? 'pause' : satisfied ? 'satisfied' : cycle >= 15 ? 'rest' : bite < 1.4 ? 'bite' : bite < 4.3 ? 'chew' : 'swallow';
+    const cycle = diningClock % 26;
+    const action = sleeping ? 'sleep' : paused ? 'pause' : satisfied ? 'satisfied' : cycle >= 14 ? 'rest' : cycle < 3.5 ? 'bite' : cycle < 11.5 ? 'chew' : 'swallow';
     const pose = action === 'bite' ? 0 : action === 'chew' ? 1 : 2;
     setStage(lastStage,false,pose);
     const screen=$('meal-screen'); screen.dataset.action=action;
@@ -115,7 +115,8 @@
       $('meal-plate').innerHTML=`<svg viewBox="0 0 ${w} ${h}" aria-hidden="true"><defs><clipPath id="plate-clip"><rect width="${w}" height="${h}"/></clipPath></defs><g clip-path="url(#plate-clip)"><image href="./assets/dining/plates.png" x="${-x}" y="${-y}" width="${sw}" height="${sh}"/></g></svg>`;
       $('meal-plate').dataset.food=String(food);
     }
-    $('meal-action-label').textContent = sleeping ? 'おなか いっぱい。すやすや…' : cue ? '' : Date.now()<growthHintUntil ? 'たべて おなかが まあるくなったにゃ' : ({bite:'いっしょに ひとくちにゃ',chew:'もぐもぐ、よく かんで',swallow:'ごっくん。おいしいにゃ',rest:'のんびり ひとやすみにゃ',satisfied:'おなか まんぞくにゃ',pause:''}[action]);
+    const diningText = cycle < 14 ? 'もぐもぐ、ゆっくり よく かんで' : cycle < 16 || cycle >= 24 ? '' : 'のんびり ひとやすみにゃ';
+    $('meal-action-label').textContent = sleeping ? 'おなか いっぱい。すやすや…' : cue || paused ? '' : Date.now()<growthHintUntil ? 'たべて おなかが まあるくなったにゃ' : satisfied ? 'おなか まんぞくにゃ' : diningText;
     if(!paused) session.diningClock=diningClock;
   }
   function renderHome() {

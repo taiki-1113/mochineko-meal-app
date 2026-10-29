@@ -28,3 +28,7 @@ Use case: precise-object-edit. Create a production BACKGROUND ONLY edit of this 
 - プロジェクト：https://github.com/googlefonts/zen-marugothic
 - 取得元：https://raw.githubusercontent.com/google/fonts/main/ofl/zenmarugothic/ZenMaruGothic-Bold.ttf
 - 吹き出し・終了ボタンの猫マークと飾り線は、このアプリ用にSVGで作成。
+
+## 音声差し替え（2026-10-29）
+
+現在のhappy/relaxed/affectionate/surprised各WAVはユーザー添付『画面録画 2026-10-27 151833.mp4』の3区間を切り出した派生音声。合成音という旧記述は寝息のみに適用。3.07–3.55秒、6.38–7.38秒、8.02–9.57秒を使用し、FFmpegで22.05kHzモノラル化、音量調整（-22LUFS目標）、80Hzハイパス・9kHzローパス、前後フェードと余白、一部0.94–1.02倍の速度調整。既存generate-meows.pyは旧音源の生成ツールであり、再実行すると現行音を上書きするため使用しない。

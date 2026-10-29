@@ -11,10 +11,10 @@ const root=path.resolve(__dirname,'..'),out=path.join(root,'output/verification'
  const results=[];
  for(const test of [
   {stage:1,clock:.1,w:390,h:844,pose:'bite',file:'dining-bite.png'},
-  {stage:5,clock:2.2,w:390,h:844,pose:'chew',file:'dining-chew.png'},
+  {stage:5,clock:5,w:390,h:844,pose:'chew',file:'dining-chew.png'},
   {stage:9,clock:17,w:390,h:844,pose:'rest',file:'dining-full.png'},
   {stage:1,clock:.1,w:320,h:568,pose:'bite',file:'dining-small.png'},
-  {stage:5,clock:2.2,w:844,h:390,pose:'chew',file:'dining-landscape.png'},
+  {stage:5,clock:5,w:844,h:390,pose:'chew',file:'dining-landscape.png'},
   {stage:9,clock:17,w:600,h:900,pose:'rest',file:'dining-desktop.png'},
  ]){
   await page.setViewportSize({width:test.w,height:test.h});
@@ -34,7 +34,7 @@ const root=path.resolve(__dirname,'..'),out=path.join(root,'output/verification'
  }
  // Verify all three poses for each of the nine body stages and pause/resume behavior.
  await page.setViewportSize({width:390,height:844});
- for(let stage=1;stage<=9;stage++)for(const [clock,pose] of [[.1,'bite'],[2.2,'chew'],[17,'rest']]){
+ for(let stage=1;stage<=9;stage++)for(const [clock,pose] of [[.1,'bite'],[5,'chew'],[17,'rest']]){
   await page.evaluate(({stage,clock,seed})=>{localStorage.setItem('mochineko.v1',JSON.stringify(seed));localStorage.setItem('mochineko.session',JSON.stringify({childId:'test',meal:'lunch',duration:30,startedAt:Date.now()-((stage-1)/8*1800000+1000),phase:'active',diningClock:clock}));},{stage,clock,seed});
   await page.reload();await page.waitForFunction(()=>!!document.querySelector('.dining-sheet'));await page.clock.runFor(450);
   assert.equal(await page.locator('#meal-screen').getAttribute('data-stage'),String(stage));assert.equal(await page.locator('#meal-screen').getAttribute('data-pose'),stage===9?'rest':pose);
